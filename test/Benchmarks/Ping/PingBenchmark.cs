@@ -98,15 +98,16 @@ namespace Benchmarks.Ping
             grainFactory: this.client,
             blocksPerWorker: 10);
 
-        public Task PingConcurrentHostedClient(int blocksPerWorker = 30) => this.Run(
+        public Task PingConcurrentHostedClient(int blocksPerWorker = 30, int maxConcurrency = 250) => this.Run(
             runs: 3,
             grainFactory: (IGrainFactory)this.hosts[0].Services.GetService(typeof(IGrainFactory)),
-            blocksPerWorker: blocksPerWorker);
+            blocksPerWorker: blocksPerWorker,
+            maxConcurrency: maxConcurrency);
 
-        private async Task Run(int runs, IGrainFactory grainFactory, int blocksPerWorker)
+        private async Task Run(int runs, IGrainFactory grainFactory, int blocksPerWorker, int maxConcurrency = 250)
         {
             var loadGenerator = new ConcurrentLoadGenerator<IPingGrain>(
-                maxConcurrency: 250,
+                maxConcurrency: maxConcurrency,
                 blocksPerWorker: blocksPerWorker,
                 requestsPerBlock: 500,
                 issueRequest: g => g.Run(),

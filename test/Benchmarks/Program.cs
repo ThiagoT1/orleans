@@ -155,6 +155,10 @@ namespace Benchmarks
             {
                 new PingBenchmark(numSilos: 2, startClient: false, grainsOnSecondariesOnly: true).PingConcurrentHostedClient(blocksPerWorker: 1000).GetAwaiter().GetResult();
             },
+            ["SequentialPing_HostedClient"] = () =>
+            {
+                BenchmarkRunner.Run<LocalSequentialPingBenchmark>();
+            },
             ["PingForever"] = () =>
             {
                 new PingBenchmark().PingForever().GetAwaiter().GetResult();

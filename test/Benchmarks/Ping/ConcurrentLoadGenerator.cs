@@ -23,6 +23,7 @@ namespace Benchmarks.Ping
         private Channel<WorkBlock> completedBlocks;
         private readonly Func<TState, Task> issueRequest;
         private readonly Func<int, TState> getStateForWorker;
+        private readonly bool logResults;
         private readonly bool logIntermediateResults;
         private readonly Task[] tasks;
         private readonly TState[] states;
@@ -36,6 +37,7 @@ namespace Benchmarks.Ping
             int requestsPerBlock,
             Func<TState, Task> issueRequest,
             Func<int, TState> getStateForWorker,
+            bool logResults = true,
             bool logIntermediateResults = false)
         {
             this.numWorkers = maxConcurrency;
@@ -43,6 +45,7 @@ namespace Benchmarks.Ping
             this.requestsPerBlock = requestsPerBlock;
             this.issueRequest = issueRequest;
             this.getStateForWorker = getStateForWorker;
+            this.logResults = logResults;
             this.logIntermediateResults = logIntermediateResults;
             this.tasks = new Task[maxConcurrency];
             this.states = new TState[maxConcurrency];
@@ -88,6 +91,7 @@ namespace Benchmarks.Ping
             // Start the run.
             for (var i = 0; i < this.numWorkers; i++)
             {
+                this.states[i] = getStateForWorker(i);
                 this.tasks[i] = this.RunWorker(this.states[i], this.requestsPerBlock, this.blocksPerWorker);
             }
 
@@ -108,12 +112,20 @@ namespace Benchmarks.Ping
                 if (this.logIntermediateResults && blocks.Count >= nextReportBlockCount)
                 {
                     nextReportBlockCount += blocksPerReport;
-                    Console.WriteLine("    " + PrintReport(0));
+                    if (this.logResults)
+                    {
+                        Console.WriteLine("    " + PrintReport(0));
+                    }
                 }
             }
 
-            if (this.logIntermediateResults) Console.WriteLine("  Total: " + PrintReport(0));
-            else Console.WriteLine(PrintReport(0));
+            if (this.logResults)
+            {
+                if (this.logIntermediateResults)
+                    Console.WriteLine("  Total: " + PrintReport(0));
+                else
+                    Console.WriteLine(PrintReport(0));
+            }
 
             string PrintReport(int statingBlockIndex)
             {
